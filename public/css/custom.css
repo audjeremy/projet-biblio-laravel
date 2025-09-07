@@ -1,0 +1,278 @@
+/* =========================================================
+   Bibliothèque — Thème cosy / lecture
+   Place ce fichier dans: public/css/custom.css
+   Chargé après Bootstrap pour surcharger les styles par défaut
+   Palette: crème / sauge / encre / accents ambre
+   ========================================================= */
+
+/* --------- Variables de thème --------- */
+:root{
+  --bg: #FAF8F6;          /* fond crème apaisant */
+  --surface: #FFFFFF;      /* cartes & panneaux */
+  --ink: #1F2A37;          /* texte principal (encre) */
+  --muted: #6B7280;        /* texte secondaire */
+  --primary: #6D9773;      /* sauge (boutons/accents) */
+  --primary-600:#5E8464;
+  --primary-100:#E8F1EA;
+  --amber: #D4A373;        /* accent chaleureux */
+  --border: #E5E7EB;       /* contours doux */
+  --shadow: 0 8px 24px rgba(31,42,55,.08), 0 2px 8px rgba(31,42,55,.06);
+  --radius-lg: 16px;       /* arrondis généreux */
+  --radius-md: 12px;
+  --radius-sm: 10px;
+  --space: 16px;
+  --space-sm: 10px;
+  --space-lg: 24px;
+  --focus: 0 0 0 3px rgba(109,151,115,.25); /* anneau focus accessible */
+}
+
+/* --------- Base typographique --------- */
+html,body{
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  line-height: 1.7;
+}
+h1,h2,h3,h4{
+  letter-spacing:.2px;
+  font-weight: 700;
+}
+p{margin: 0 0 1em}
+
+/* Optionnel : rendre la colonne principale un peu plus étroite (meilleure lecture) */
+.container{
+  max-width: 980px;
+}
+
+/* --------- Navigation --------- */
+/* --------- Navigation / Topbar --------- */
+#toptop{
+  border: 1px solid var(--border);
+  border-radius: 25px;
+  background: #fff;                 /* tu peux garder ton bleu si tu veux */
+  box-shadow: 0 2px 8px rgba(31,42,55,.06);
+  display: flex;
+  justify-content: space-between;   /* h2 à gauche, nav à droite */
+  align-items: center;               /* aligne verticalement h2 et nav */
+  padding: 10px 16px;                /* respirations internes */
+  gap: 16px;
+}
+
+#toptop h2{
+  margin: 0;                         /* retire l’espace par défaut du h2 */
+  line-height: 1.2;                  /* hauteur visuelle plus nette */
+  font-size: larger;
+}
+
+.topnav{                              /* au lieu de .mb-4 d’origine */
+  display: flex;
+  align-items: center;
+  gap: 10px;                          /* espace entre boutons */
+  margin: 0;                          /* IMPORTANT : pas de marge */
+}
+
+.topnav .btn{
+  border-radius: 999px;               /* pastilles */
+  padding: 8px 14px;
+}
+
+.topnav .btn-outline-primary{
+  --bs-btn-color: var(--primary);
+  --bs-btn-border-color: var(--primary);
+  --bs-btn-hover-bg: var(--primary-100);
+  --bs-btn-hover-border-color: var(--primary);
+}
+#logo{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#logo h2{
+  margin: 0;
+  font-size: 1.5rem;
+}
+#logo svg{
+  width: 34px;
+  height: 34px;
+}
+/* --------- Cartes / panneaux --------- */
+.card{
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  background: var(--surface);
+}
+.card .card-header{
+  background: #fff;
+  border-bottom-color: var(--border);
+}
+.card .card-body{
+  padding: var(--space-lg);
+}
+
+/* --------- Boutons --------- */
+.btn{
+  border-radius: var(--radius-md);
+  transition: transform .06s ease, box-shadow .2s ease;
+}
+.btn:active{ transform: translateY(1px) }
+.btn-primary{
+  --bs-btn-bg: var(--primary);
+  --bs-btn-border-color: var(--primary);
+  --bs-btn-hover-bg: var(--primary-600);
+  --bs-btn-hover-border-color: var(--primary-600);
+  --bs-btn-disabled-bg: var(--primary);
+  --bs-btn-disabled-border-color: var(--primary);
+  box-shadow: var(--shadow);
+}
+.btn-outline-danger{ border-radius: var(--radius-md) }
+.btn-amber{
+  color:#fff; background: var(--amber); border-color: var(--amber);
+}
+.btn-amber:hover{
+  background:#C79262; border-color:#C79262;
+}
+
+/* Petits boutons */
+.btn-sm{ border-radius: var(--radius-sm) }
+
+/* --------- Formulaires --------- */
+.form-label{ color: var(--muted) }
+.form-control, .form-select, .form-check-input{
+  border-radius: var(--radius-md);
+  border-color: var(--border);
+  background: #fff;
+}
+.form-control:focus, .form-select:focus, .form-check-input:focus{
+  border-color: var(--primary);
+  box-shadow: var(--focus);
+}
+.input-group .form-control{ border-radius: var(--radius-md) }
+
+/* Messages d’erreur */
+.is-invalid{
+  border-color: #ef4444 !important;
+}
+.invalid-feedback{ font-size:.9rem }
+
+/* Champs de recherche en tête de liste */
+.search-row{
+  display:grid; grid-template-columns: 1fr auto; gap: var(--space-sm);
+}
+
+/* --------- Tables (liste de livres) --------- */
+.table-responsive{
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  background: var(--surface);
+}
+.table{
+  margin: 0;
+  vertical-align: middle;
+}
+.table thead th{
+  background: #FBFBFD;
+  font-weight: 600;
+  color: #374151;
+  border-bottom-color: var(--border);
+}
+.table tbody td{
+  border-bottom-color: var(--border);
+}
+.table a{
+  color: var(--ink);
+  text-decoration: none;
+}
+.table a:hover{
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* --------- Badges / étiquettes --------- */
+.badge{
+  border-radius: 999px;
+  background: var(--primary-100);
+  color: var(--primary-600);
+  border: 1px solid rgba(109,151,115,.25);
+  padding: .35rem .6rem;
+  font-weight: 600;
+}
+
+/* --------- Alertes --------- */
+.alert{
+  border-radius: var(--radius-md);
+  border-color: var(--border);
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+.alert-info{
+  background: #F3F6F4;
+  border-color: #E0E7E3;
+}
+
+/* --------- Pagination Laravel --------- */
+.pagination{
+  --gap: 6px;
+  display:flex; gap: var(--gap);
+}
+.pagination .page-item .page-link{
+  border-radius: var(--radius-sm);
+  border-color: var(--border);
+  color: var(--ink);
+  padding: 8px 12px;
+}
+.pagination .page-item.active .page-link{
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+
+/* --------- Liens --------- */
+a{ color: var(--primary) }
+a:hover{ color: var(--primary-600) }
+
+/* --------- Ombres utilitaires --------- */
+.shadow-soft{ box-shadow: var(--shadow) }
+
+/* --------- Détails (page show) --------- */
+dl.row dt{
+  color: var(--muted);
+}
+dl.row dd{
+  color: var(--ink);
+}
+
+/* --------- Modales / dropdowns (si utilisés) --------- */
+.modal-content, .dropdown-menu{
+  border-radius: var(--radius-lg);
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* --------- Focus visible pour accessibilité --------- */
+:focus-visible{
+  outline: none !important;
+  box-shadow: var(--focus) !important;
+}
+
+/* --------- Mode sombre (optionnel, automatique) --------- */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg: #0F172A;
+    --surface:#111827;
+    --ink: #E5E7EB;
+    --muted:#94A3B8;
+    --border:#1F2937;
+    --shadow: 0 8px 24px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.25);
+    --primary-100:#223028;
+  }
+  .table-responsive, .card, .alert{ background: var(--surface) }
+  .table thead th{ background: #0B1220; color:#D1D5DB }
+  .table tbody td{ border-bottom-color: var(--border) }
+  .badge{
+    background: #1E2A22; color:#CFE5D2; border-color:#2A3A2D;
+  }
+}
