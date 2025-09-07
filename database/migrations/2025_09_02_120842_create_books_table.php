@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('author');
             $table->string('category')->nullable();
-            $table->year('year')->nullable();
+            $table->integer('year')->nullable();
             $table->text('summary')->nullable();
             $table->decimal('price', 8, 2)->default(0);
             $table->timestamps();
