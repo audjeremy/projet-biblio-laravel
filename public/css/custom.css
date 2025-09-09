@@ -111,6 +111,13 @@ main{
   width: 34px;
   height: 34px;
 }
+/* --------- Navigation : forcer texte noir au survol --------- */
+.topnav .btn-outline-primary:hover,
+#toptop .btn-outline-primary:hover {
+  color: var(--ink) !important;        /* texte noir (ton encre cosy) */
+  background-color: var(--primary-100) !important; /* fond sauge pâle */
+  border-color: var(--primary) !important;         /* bord sauge */
+}
 
 /* --------- Cartes / panneaux --------- */
 .card {
