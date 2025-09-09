@@ -9,14 +9,12 @@ use Illuminate\Http\RedirectResponse;
 
 class BookController extends Controller
 {
-    /**
-     * Liste + recherche + pagination
-     */
+   
     public function index(Request $request): View
     {
         $query = Book::query();
 
-        // Recherche simple sur titre / auteur / année
+        // Recherche sur titre / auteur / année
         if ($request->filled('q')) {
             $q = (string) $request->input('q');
             $query->where(function ($qq) use ($q) {
@@ -29,7 +27,7 @@ class BookController extends Controller
         // Tri du plus récent au plus ancien + pagination
         $books = $query
             ->orderByDesc('created_at')
-            ->paginate(10)
+            ->paginate(12)
             ->withQueryString(); // conserve ?q= dans la pagination
 
         return view('books.index', compact('books'));

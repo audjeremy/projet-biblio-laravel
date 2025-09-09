@@ -18,7 +18,7 @@
         </a>
         <a href="{{ request()->fullUrlWithQuery(['view' => 'cards']) }}"
            class="btn btn-outline-secondary {{ $currentView === 'cards' ? 'active' : '' }}">
-          Cards
+          Cartes
         </a>
       </div>
 
@@ -41,7 +41,6 @@
     <div class="col-sm-3 d-grid">
       <button class="btn btn-outline-secondary">Rechercher</button>
     </div>
-
     {{-- Conserver la vue choisie quand on soumet la recherche --}}
     <input type="hidden" name="view" value="{{ $currentView }}">
   </form>
@@ -104,31 +103,58 @@
         </table>
       </div>
     @else
-      {{-- ===== Vue CARDS (grille) ===== --}}
+      {{-- ===== Vue CARDS (vignettes visuelles) ===== --}}
       <div class="row g-4">
         @foreach($books as $b)
-          <div class="col-sm-6 col-lg-4">
+          <div class="col-sm-6 col-lg-3">
             <div class="card h-100 shadow-soft">
               <div class="card-body d-flex flex-column">
+                {{-- Cover / placeholder arrondi en haut --}}
+                <div class="mb-3"
+                     style="
+                       width:100%;
+                       height:160px;
+                       border-radius:14px;
+                       background: linear-gradient(135deg,#efe7de,#f7f1ea);
+                       border:1px solid #eadfD5;
+                       display:flex; align-items:center; justify-content:center;
+                       color:#9A7F67; font-weight:800; font-size:1.5rem;">
+                  {{ \Illuminate\Support\Str::substr($b->title,0,1) }}
+                </div>
+
+                {{-- Titre & méta --}}
                 <h5 class="card-title mb-1">{{ $b->title }}</h5>
-                <div class="text-muted mb-2">{{ $b->author }} · {{ $b->year ?? '—' }}</div>
+                <div class="text-muted mb-2">
+                  {{ $b->author }}@if($b->year) · {{ $b->year }}@endif
+                </div>
+
+                {{-- Catégorie / tags --}}
                 @if($b->category)
-                  <div class="mb-2"><span class="badge">{{ $b->category }}</span></div>
+                  <div class="mb-2">
+                    <span class="badge">{{ $b->category }}</span>
+                  </div>
                 @endif
+
+                {{-- Résumé tronqué pour homogénéiser la hauteur --}}
                 <p class="card-text flex-grow-1">
-                  {{ \Illuminate\Support\Str::limit($b->summary, 110, '…') }}
+                  {{ \Illuminate\Support\Str::limit($b->summary, 120, '…') }}
                 </p>
-                <div class="mt-2 fw-bold text-primary">
-                  {{ number_format((float)$b->price, 2, '.', ' ') }} $
+
+                {{-- Prix + actions --}}
+                <div class="mt-2 d-flex justify-content-between align-items-center">
+                  <div class="fw-bold text-primary">
+                    {{ number_format((float)$b->price, 2, '.', ' ') }} $
+                  </div>
+                  <div class="d-flex gap-2">
+                    <a href="{{ route('books.show',$b) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                    <form method="post" action="{{ route('books.destroy',$b) }}"
+                          onsubmit="return confirm('Supprimer ce livre ?')" class="d-inline">
+                      @csrf @method('DELETE')
+                      <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+                    </form>
+                  </div>
                 </div>
-                <div class="mt-3 d-flex gap-2 flex-wrap">
-                  <a href="{{ route('books.show',$b) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
-                  <form method="post" action="{{ route('books.destroy',$b) }}"
-                        onsubmit="return confirm('Supprimer ce livre ?')" class="d-inline">
-                    @csrf @method('DELETE')
-                    <button class="btn btn-sm btn-outline-danger">Supprimer</button>
-                  </form>
-                </div>
+
               </div>
             </div>
           </div>
@@ -138,7 +164,7 @@
 
     {{-- Pagination : conserve la vue + la recherche --}}
     <div class="mt-4">
-      {{ $books->appends(['view' => $currentView, 'q' => request('q')])->links() }}
+      {{ $books->appends(['view' => $currentView, 'q' => request('q')])->links('pagination::bootstrap-5') }}
     </div>
   @endif
 @endsection

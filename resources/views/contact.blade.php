@@ -39,8 +39,8 @@
 
   <hr class="my-4">
   <div class="text-muted">
-    <h2 class="h5">Informations de la bibliothèque</h2>
+    <h2 class="h5">Informations de la Librairie E-J</h2>
     <p>Adresse: 123 Rue Principale, Montréal</p>
-    <p>Téléphone: (514) 555-1234 — Email: biblio@example.com</p>
+    <p>Téléphone: (514) 555-1234 — Email: librairieej@mail.com</p>
   </div>
 @endsection

@@ -11,10 +11,9 @@
 
   <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Epunda+Slab:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
-
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Epunda+Slab:ital,wght@0,300..900;1,300..900&display=swap');
+  </style>
 </head>
 
 <body class="container py-4">
