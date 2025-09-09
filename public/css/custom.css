@@ -7,72 +7,80 @@
 
 /* --------- Variables de thème --------- */
 :root{
-  --bg: #FAF8F6;          /* fond crème apaisant */
-  --surface: #FFFFFF;      /* cartes & panneaux */
+  --bg: #f9efe6;          
+  --surface: #FFFFFF;      
   --ink: #1F2A37;          /* texte principal (encre) */
   --muted: #6B7280;        /* texte secondaire */
   --primary: #6D9773;      /* sauge (boutons/accents) */
   --primary-600:#5E8464;
   --primary-100:#E8F1EA;
-  --amber: #D4A373;        /* accent chaleureux */
-  --border: #E5E7EB;       /* contours doux */
+  --amber: #D4A373;        /* accent  */
+  --border: #E5E7EB;       /* contours  */
   --shadow: 0 8px 24px rgba(31,42,55,.08), 0 2px 8px rgba(31,42,55,.06);
-  --radius-lg: 16px;       /* arrondis généreux */
+  --radius-lg: 16px;       /* arrondis ++ */
   --radius-md: 12px;
   --radius-sm: 10px;
   --space: 16px;
   --space-sm: 10px;
   --space-lg: 24px;
-  --focus: 0 0 0 3px rgba(109,151,115,.25); /* anneau focus accessible */
+  --focus: 0 0 0 3px rgba(109,151,115,.25); 
 }
 
-/* --------- Base typographique --------- */
+
+
 html,body{
   background: var(--bg);
   color: var(--ink);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
   line-height: 1.7;
 }
+
 h1,h2,h3,h4{
   letter-spacing:.2px;
   font-weight: 700;
+  font-family: "Epunda Slab", serif;
 }
 p{margin: 0 0 1em}
 
-/* Optionnel : rendre la colonne principale un peu plus étroite (meilleure lecture) */
-.container{
-  max-width: 980px;
-}
 
+
+main{
+    background-color: #adccb1;
+  max-width: 1080px;       
+  margin: 0 auto;         /* centre horizontalement */
+  padding: 1rem;          /* petit espace interne */
+  margin-top: 1rem;
+  border-radius: 20px;
+
+}
 /* --------- Navigation --------- */
 /* --------- Navigation / Topbar --------- */
 #toptop{
   border: 1px solid var(--border);
   border-radius: 25px;
-  background: #fff;                 /* tu peux garder ton bleu si tu veux */
+  background: #fff;               
   box-shadow: 0 2px 8px rgba(31,42,55,.06);
   display: flex;
-  justify-content: space-between;   /* h2 à gauche, nav à droite */
-  align-items: center;               /* aligne verticalement h2 et nav */
-  padding: 10px 16px;                /* respirations internes */
-  gap: 16px;
+  justify-content: space-between;   
+  align-items: center;               
+  padding: 10px 16px;                
 }
 
 #toptop h2{
-  margin: 0;                         /* retire l’espace par défaut du h2 */
-  line-height: 1.2;                  /* hauteur visuelle plus nette */
+  margin: 0;                       
+  line-height: 1.2;                  
   font-size: larger;
 }
 
-.topnav{                              /* au lieu de .mb-4 d’origine */
+.topnav{                             
   display: flex;
   align-items: center;
-  gap: 10px;                          /* espace entre boutons */
-  margin: 0;                          /* IMPORTANT : pas de marge */
+  gap: 10px;                          
+  margin: 0;                        
 }
 
 .topnav .btn{
-  border-radius: 999px;               /* pastilles */
+  border-radius: 999px;               
   padding: 8px 14px;
 }
 
@@ -245,34 +253,50 @@ dl.row dd{
   color: var(--ink);
 }
 
-/* --------- Modales / dropdowns (si utilisés) --------- */
-.modal-content, .dropdown-menu{
+/* --------- Modales / dropdowns --------- */
+/* .modal-content, .dropdown-menu{
   border-radius: var(--radius-lg);
   border-color: var(--border);
   box-shadow: var(--shadow);
-}
+} */
 
-/* --------- Focus visible pour accessibilité --------- */
-:focus-visible{
-  outline: none !important;
-  box-shadow: var(--focus) !important;
-}
 
-/* --------- Mode sombre (optionnel, automatique) --------- */
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg: #0F172A;
-    --surface:#111827;
-    --ink: #E5E7EB;
-    --muted:#94A3B8;
-    --border:#1F2937;
-    --shadow: 0 8px 24px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.25);
-    --primary-100:#223028;
+/* ===========================
+   Navigation responsive
+   =========================== */
+
+/* Sur écrans petits (<768px), on empile le titre et la nav */
+@media (max-width: 767.98px) {
+  #toptop {
+    flex-direction: column;        
+    align-items: flex-start;       
+    gap: 8px;                      
   }
-  .table-responsive, .card, .alert{ background: var(--surface) }
-  .table thead th{ background: #0B1220; color:#D1D5DB }
-  .table tbody td{ border-bottom-color: var(--border) }
-  .badge{
-    background: #1E2A22; color:#CFE5D2; border-color:#2A3A2D;
+
+  #toptop h2 {
+    font-size: 1.25rem;            
+  }
+
+  .topnav {
+    flex-wrap: wrap;               
+    gap: 8px;
+    width: 100%; 
+  }
+
+  .topnav .btn {
+    flex: 1 1 auto;                
+    text-align: center;
+  }
+}
+
+/* Sur écrans moyens (768px–991px) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  #toptop {
+    padding: 10px;
+    gap: 12px;
+  }
+  .topnav .btn {
+    padding: 6px 10px;
+    font-size: 0.9rem;
   }
 }

@@ -46,7 +46,7 @@
       @method('DELETE')
       <button type="submit"
               style="padding:.5rem .75rem;border:1px solid #b91c1c;background:#ef4444;color:white;border-radius:.5rem;">
-        🗑️ Supprimer
+        Supprimer
       </button>
     </form>
   </div>
