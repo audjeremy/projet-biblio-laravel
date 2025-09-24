@@ -62,17 +62,21 @@ class BookController extends Controller
     /**
      * GET /news : livres ajoutés récemment (30 derniers jours)
      */
-    public function news(): View
-    {
-        $since = now()->subDays(30);
+    // app/Http/Controllers/BookController.php
 
-        $books = Book::where('created_at', '>=', $since)
-            ->orderByDesc('created_at')
-            ->paginate(12)
-            ->withQueryString();
+public function news(): View
+{
+    $days = 10; // fenêtre "nouveau"
+    $books = Book::where('created_at', '>=', now()->subDays($days))
+        ->orderByDesc('created_at')
+        ->paginate(12)
+        ->withQueryString();
 
-        return view('books.news', compact('books', 'since'));
-    }
+    return view('books.news', [
+        'books' => $books,
+        'days'  => $days,
+    ]);
+}
 
     public function create(): View
     {
