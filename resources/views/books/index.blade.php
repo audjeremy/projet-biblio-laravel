@@ -218,3 +218,28 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+  (function() {
+    // Si l'URL n'a pas de ?view=..., appliquer le dernier choix mémorisé
+    const url = new URL(window.location.href);
+    if (!url.searchParams.get('view')) {
+      const saved = localStorage.getItem('books_view');
+      if (saved && (saved === 'list' || saved === 'cards')) {
+        url.searchParams.set('view', saved);
+        window.location.replace(url.toString());
+        return;
+      }
+    }
+    // Mémoriser le choix quand on clique sur un bouton de toggle
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href*="view="]');
+      if (!a) return;
+      const u = new URL(a.href);
+      const v = u.searchParams.get('view');
+      if (v) localStorage.setItem('books_view', v);
+    });
+  })();
+</script>
+@endpush

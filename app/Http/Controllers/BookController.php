@@ -6,15 +6,13 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class BookController extends Controller
 {
-
     public function __construct()
     {
-        // Lie automatiquement les actions aux méthodes de BookPolicy :
-        // index->viewAny, show->view, create/store->create, edit/update->update, destroy->delete
+        // Lier les actions à BookPolicy : index->viewAny, show->view, create/store->create,
+        // edit/update->update, destroy->delete
         $this->authorizeResource(Book::class, 'book');
     }
 
@@ -23,8 +21,9 @@ class BookController extends Controller
     {
         $query = Book::query();
 
+        // Recherche sur titre / auteur / année
         if ($request->filled('q')) {
-            $q = $request->q;
+            $q = (string) $request->q;
             $query->where(function ($sub) use ($q) {
                 $sub->where('title', 'like', "%{$q}%")
                     ->orWhere('author', 'like', "%{$q}%")
@@ -32,9 +31,11 @@ class BookController extends Controller
             });
         }
 
-        $books = $query->orderBy('title')
-                       ->paginate(12)
-                       ->withQueryString();
+        // Tri par titre (son choix) + pagination
+        $books = $query
+            ->orderBy('title')
+            ->paginate(12)
+            ->withQueryString();
 
         return view('books.index', compact('books'));
     }

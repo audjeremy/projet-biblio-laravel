@@ -8,8 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'name', 'email', 'subject', 'message', 'is_read',
+        'name',
+        'email',
+        'subject',
+        'message',
+        'is_read',
     ];
 
     protected $casts = [

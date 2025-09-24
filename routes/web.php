@@ -10,8 +10,8 @@ use App\Http\Controllers\PaypalController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\MessageController; // Formulaire Contact (public)
 
-// Page d’accueil
-Route::get('/', fn () => view('welcome'));
+// Page d’accueil → redirige vers /books (comme dans main)
+Route::redirect('/', '/books');
 
 // Dashboard (protégé)
 Route::get('/dashboard', fn () => view('dashboard'))
@@ -76,10 +76,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 | Admin  : create/store/edit/update/destroy
 */
 Route::resource('books', BookController::class)->only(['index','show']);
-
 Route::middleware(['auth','verified','role:admin'])->group(function () {
     Route::resource('books', BookController::class)->except(['index','show']);
 });
+
+// Route supplémentaire de main : Nouveautés
+Route::get('/news', [BookController::class, 'news'])->name('books.news');
 
 /*
 |--------------------------------------------------------------------------
