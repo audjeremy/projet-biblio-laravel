@@ -54,7 +54,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/cart/coupon',             [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
     Route::delete('/cart/coupon',           [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 
-   
+    // Checkout Stripe
+    Route::get('/checkout/stripe',  [CheckoutController::class, 'create'])->name('checkout.stripe');
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/cancel',  [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+
+    // Checkout PayPal
+    Route::get('/checkout/paypal',         [PaypalController::class, 'create'])->name('paypal.create');
+    Route::get('/checkout/paypal/return',  [PaypalController::class, 'approveReturn'])->name('paypal.return');
+    Route::get('/checkout/paypal/cancel',  [PaypalController::class, 'cancel'])->name('paypal.cancel');
 });
 
 /*
@@ -69,7 +77,7 @@ Route::middleware(['auth','verified','role:admin'])->group(function () {
     Route::resource('books', BookController::class)->except(['index','show']);
 });
 
-// Route supplémentaire de main : Nouveautés
+// Route supplémentaire : Nouveautés
 Route::get('/news', [BookController::class, 'news'])->name('books.news');
 
 /*
