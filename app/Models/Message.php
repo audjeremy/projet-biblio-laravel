@@ -2,17 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
+    use HasFactory;
 
-
-    // TRÈS IMPORTANT : $fillable pour la sécurité
     protected $fillable = [
         'name',
-        'email', 
+        'email',
         'subject',
-        'message'
+        'message',
+        'is_read',
+    ];
+
+    protected $casts = [
+        'is_read' => 'boolean',
     ];
 }

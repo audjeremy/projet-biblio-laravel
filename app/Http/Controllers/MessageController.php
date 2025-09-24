@@ -4,33 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use Illuminate\Http\Request;
-use Illuminate\Contracts\View\View;
+use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class MessageController extends Controller
 {
-    /** GET /contact : afficher le formulaire */
+    /** GET /contact : afficher le formulaire (vue de ton coéquipier) */
     public function create(): View
     {
-        return view('contact');
+        return view('messages.create');
     }
 
-    /** POST /contact : valider + enregistrer + flash + redirect */
+    /** POST /contact : valider + enregistrer + flash + redirect back */
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'name'    => ['required','string','max:255'],
             'email'   => ['required','email','max:255'],
             'subject' => ['nullable','string','max:255'],
-            'message' => ['required','string','min:5'],
+            'message' => ['required','string','max:5000'],
         ]);
 
-        Message::create($data);
+        Message::create($data + ['is_read' => false]); // garde son is_read=false
 
-        return redirect()->route('contact')->with('ok', 'Merci ! Votre message a bien été envoyé.');
+        return back()->with('ok', 'Message envoyé. Nous vous répondrons rapidement.');
     }
 
-    /** GET /messages : liste paginée des messages */
+    /** GET /messages : liste paginée (préservée pour compat) */
     public function index(): View
     {
         $messages = Message::latest()->paginate(10);
