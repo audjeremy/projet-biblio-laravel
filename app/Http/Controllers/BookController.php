@@ -11,17 +11,19 @@ class BookController extends Controller
 {
     public function __construct()
     {
-        // Lier les actions à BookPolicy : index->viewAny, show->view, create/store->create,
-        // edit/update->update, destroy->delete
+        // Lie automatiquement aux méthodes de BookPolicy :
+        // index->viewAny, show->view, create/store->create, edit/update->update, destroy->delete
         $this->authorizeResource(Book::class, 'book');
     }
 
-    // Liste avec recherche & pagination
+    /**
+     * GET /books : liste avec recherche et filtres (+ pagination)
+     */
     public function index(Request $request): View
     {
         $query = Book::query();
 
-        // Recherche sur titre / auteur / année
+        // Recherche globale titre / auteur / année (?q=...)
         if ($request->filled('q')) {
             $q = (string) $request->q;
             $query->where(function ($sub) use ($q) {
@@ -31,13 +33,45 @@ class BookController extends Controller
             });
         }
 
-        // Tri par titre (son choix) + pagination
+        // Filtres avancés facultatifs (UI viendra après)
+        if ($request->filled('author')) {
+            $query->where('author', 'like', '%'.$request->author.'%');
+        }
+        if ($request->filled('year')) {
+            $query->where('year', (int) $request->year);
+        }
+        if ($request->filled('category')) {
+            $query->where('category', 'like', '%'.$request->category.'%');
+        }
+        if ($request->filled('min')) {
+            $query->where('price', '>=', (float) $request->min);
+        }
+        if ($request->filled('max')) {
+            $query->where('price', '<=', (float) $request->max);
+        }
+
+        // Tri par titre + pagination
         $books = $query
             ->orderBy('title')
             ->paginate(12)
             ->withQueryString();
 
         return view('books.index', compact('books'));
+    }
+
+    /**
+     * GET /news : livres ajoutés récemment (30 derniers jours)
+     */
+    public function news(): View
+    {
+        $since = now()->subDays(30);
+
+        $books = Book::where('created_at', '>=', $since)
+            ->orderByDesc('created_at')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('books.news', compact('books', 'since'));
     }
 
     public function create(): View
