@@ -6,6 +6,7 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Schema;
 
 class BookController extends Controller
 {
@@ -33,7 +34,7 @@ class BookController extends Controller
             });
         }
 
-        // Filtres avancés facultatifs (UI viendra après)
+        // Filtres avancés
         if ($request->filled('author')) {
             $query->where('author', 'like', '%'.$request->author.'%');
         }
@@ -50,6 +51,11 @@ class BookController extends Controller
             $query->where('price', '<=', (float) $request->max);
         }
 
+        // ✅ Promotions : /books?promo=1  -> discount > 0 (si la colonne existe)
+        if ($request->boolean('promo') && Schema::hasColumn('books', 'discount')) {
+            $query->where('discount', '>', 0);
+        }
+
         // Tri par titre + pagination
         $books = $query
             ->orderBy('title')
@@ -57,27 +63,26 @@ class BookController extends Controller
             ->withQueryString();
 
         $badgeDays = 10; // fenêtre "Nouveau"
-    return view('books.index', compact('books', 'badgeDays'));
+
+        return view('books.index', compact('books', 'badgeDays'));
     }
 
     /**
-     * GET /news : livres ajoutés récemment (30 derniers jours)
+     * GET /news : livres ajoutés récemment (10 derniers jours)
      */
-    // app/Http/Controllers/BookController.php
+    public function news(): View
+    {
+        $days = 10; // fenêtre "nouveau"
+        $books = Book::where('created_at', '>=', now()->subDays($days))
+            ->orderByDesc('created_at')
+            ->paginate(12)
+            ->withQueryString();
 
-public function news(): View
-{
-    $days = 10; // fenêtre "nouveau"
-    $books = Book::where('created_at', '>=', now()->subDays($days))
-        ->orderByDesc('created_at')
-        ->paginate(12)
-        ->withQueryString();
-
-    return view('books.news', [
-        'books' => $books,
-        'days'  => $days,
-    ]);
-}
+        return view('books.news', [
+            'books' => $books,
+            'days'  => $days,
+        ]);
+    }
 
     public function create(): View
     {

@@ -26,7 +26,28 @@
            Cartes
         </a>
       </div>
+    {{-- Filtres rapides --}}
+<div class="flex items-center gap-2">
+  @php
+    // Construit l’URL "Toutes" = URL actuelle sans le param promo
+    $allUrl = request()->fullUrlWithQuery(collect(request()->query())->except('promo')->toArray());
+    // Construit l’URL "Promotions" = URL actuelle avec promo=1
+    $promoUrl = request()->fullUrlWithQuery(array_merge(request()->query(), ['promo' => 1]));
+    $isPromo = request()->boolean('promo');
+  @endphp
 
+  <a href="{{ $allUrl }}"
+     class="px-3 py-1.5 rounded-md border text-sm
+            {{ $isPromo ? 'border-gray-300 text-gray-700 hover:bg-gray-50' : 'bg-blue-600 text-white border-blue-600' }}">
+    Toutes
+  </a>
+
+  <a href="{{ $promoUrl }}"
+     class="px-3 py-1.5 rounded-md border text-sm
+            {{ $isPromo ? 'bg-rose-600 text-white border-rose-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50' }}">
+    Promotions
+  </a>
+</div>
       {{-- Bouton ajouter (admin seulement) --}}
       @can('create', \App\Models\Book::class)
         <a href="{{ route('books.create') }}"

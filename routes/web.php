@@ -12,8 +12,9 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\MessageController; // Formulaire Contact (public)
 
-// Page d’accueil → redirige vers /books
-Route::redirect('/', '/books');
+// Accueil = /books
+Route::redirect('/', '/books')->name('home');
+
 
 // Dashboard (protégé)
 Route::get('/dashboard', fn () => view('dashboard'))
