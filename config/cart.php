@@ -7,5 +7,5 @@ return [
         'gst' => 0.05,     // 5%
         'qst' => 0.09975,  // 9.975%
     ],
-    'shipping_flat' => 0, // si jamais tu veux un frais fixe
+    'shipping_flat' => 0, 
 ];

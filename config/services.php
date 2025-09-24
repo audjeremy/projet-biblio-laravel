@@ -35,12 +35,17 @@ return [
         ],
     ],
 
+    'stripe' => [
+        'secret'   => env('STRIPE_SECRET'),
+        'currency' => env('STRIPE_CURRENCY', 'cad'),
+    ],
+
     'paypal' => [
-    'client_id'     => env('PAYPAL_CLIENT_ID'),
-    'client_secret' => env('PAYPAL_CLIENT_SECRET'),
-    'mode'          => env('PAYPAL_MODE', 'sandbox'),
-    'currency'      => env('PAYPAL_CURRENCY', 'CAD'),
-],
+        'mode'          => env('PAYPAL_MODE', 'sandbox'), // 'live' en prod
+        'client_id'     => env('PAYPAL_CLIENT_ID'),
+        'client_secret' => env('PAYPAL_CLIENT_SECRET'),
+        'currency'      => env('PAYPAL_CURRENCY', 'CAD'),
+    ],
 
 
 ];

@@ -1,42 +1,47 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void
-    {
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-
-            // Récap
-            $table->string('currency', 8)->default('CAD');
-            $table->decimal('subtotal', 10, 2)->default(0);
-            $table->decimal('discount', 10, 2)->default(0);
-            $table->decimal('gst', 10, 2)->default(0);
-            $table->decimal('qst', 10, 2)->default(0);
-            $table->decimal('shipping', 10, 2)->default(0);
-            $table->decimal('total', 10, 2)->default(0);
-
-            // Paiement (Stripe/PayPal)
-            $table->string('provider')->index(); // 'stripe' | 'paypal'
-            $table->string('provider_session_id')->nullable()->index(); // ex Stripe Checkout Session
-            $table->string('provider_payment_intent')->nullable()->index(); // ex Stripe PaymentIntent
-
-            // Statut
-            $table->string('status')->default('paid'); // paid|pending|failed|refunded
-
-            // Optionnel: garder un snapshot JSON
-            $table->json('meta')->nullable();
-
-            $table->timestamps();
-        });
+  public function up(): void {
+    if (!Schema::hasTable('orders')) {
+      Schema::create('orders', function (Blueprint $t) {
+        $t->id();
+        $t->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $t->string('currency', 8)->default('CAD');
+        $t->decimal('subtotal', 10, 2)->default(0);
+        $t->decimal('discount', 10, 2)->default(0);
+        $t->decimal('gst', 10, 2)->default(0);
+        $t->decimal('qst', 10, 2)->default(0);
+        $t->decimal('shipping', 10, 2)->default(0);
+        $t->decimal('total', 10, 2)->default(0);
+        $t->string('provider', 32)->nullable();                // 'stripe' | 'paypal'
+        $t->string('provider_session_id', 128)->nullable();    // Stripe session / PayPal order id
+        $t->string('provider_payment_intent', 128)->nullable();// Stripe PI / PayPal capture id
+        $t->string('status', 32)->default('paid');             // paid/refunded/...
+        $t->json('meta')->nullable();
+        $t->timestamps();
+      });
     }
 
-    public function down(): void
-    {
-        Schema::dropIfExists('orders');
+    if (!Schema::hasTable('order_items')) {
+      Schema::create('order_items', function (Blueprint $t) {
+        $t->id();
+        $t->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
+        $t->foreignId('book_id')->nullable()->constrained('books')->nullOnDelete();
+        $t->string('title');
+        $t->string('author')->nullable();
+        $t->integer('quantity')->default(1);
+        $t->decimal('unit_price', 10, 2)->default(0);
+        $t->decimal('line_total', 10, 2)->default(0);
+        $t->timestamps();
+      });
     }
+  }
+
+  public function down(): void {
+    Schema::dropIfExists('order_items');
+    Schema::dropIfExists('orders');
+  }
 };
