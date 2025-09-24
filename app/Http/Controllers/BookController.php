@@ -56,7 +56,8 @@ class BookController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('books.index', compact('books'));
+        $badgeDays = 10; // fenêtre "Nouveau"
+    return view('books.index', compact('books', 'badgeDays'));
     }
 
     /**
