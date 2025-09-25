@@ -95,23 +95,82 @@
     @endif
   @endforeach
 
-  {{-- Recherche --}}
-  <form method="get" class="grid grid-cols-1 sm:grid-cols-12 gap-2 mb-6" role="search" aria-label="Recherche de livres" id="recherche">
-    <div class="sm:col-span-9">
-      <input type="text" name="q" value="{{ request('q') }}"
-             class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-             placeholder="Recherche (titre, auteur, année)">
-    </div>
-    <div class="sm:col-span-3">
-      <button class="w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Rechercher</button>
-    </div>
+{{-- Recherche & filtres avancés --}}
+<form method="get" class="grid grid-cols-1 lg:grid-cols-12 gap-2 mb-6" role="search" aria-label="Recherche de livres" id="recherche">
+  {{-- Recherche globale --}}
+  <div class="lg:col-span-4">
+    <input type="text" name="q" value="{{ request('q') }}"
+           class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+           placeholder="Recherche (titre, auteur, résumé, catégorie, année)">
+  </div>
 
-    {{-- On conserve la vue + le filtre promo dans la recherche --}}
-    <input type="hidden" name="view" value="{{ $currentView }}">
-    @if($isPromo)
-      <input type="hidden" name="promo" value="1">
-    @endif
-  </form>
+  {{-- Auteur --}}
+  <div class="lg:col-span-2">
+    <input type="text" name="author" value="{{ request('author') }}"
+           class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+           placeholder="Auteur">
+  </div>
+
+  {{-- Catégorie --}}
+  <div class="lg:col-span-2">
+    <input type="text" name="category" value="{{ request('category') }}"
+           class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+           placeholder="Catégorie">
+  </div>
+
+  {{-- Année (exacte) --}}
+  <div class="lg:col-span-1">
+    <input type="number" name="year" value="{{ request('year') }}"
+           class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+           placeholder="Année">
+  </div>
+
+  {{-- Prix min / max --}}
+  <div class="lg:col-span-1">
+    <input type="number" step="0.01" min="0" name="min" value="{{ request('min') }}"
+           class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+           placeholder="Min $">
+  </div>
+  <div class="lg:col-span-1">
+    <input type="number" step="0.01" min="0" name="max" value="{{ request('max') }}"
+           class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+           placeholder="Max $">
+  </div>
+
+  {{-- Tri --}}
+  <div class="lg:col-span-1">
+    <select name="sort" class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
+      @php $sort = request('sort','title_asc'); @endphp
+      <option value="title_asc"  {{ $sort==='title_asc'  ? 'selected' : '' }}>Titre A→Z</option>
+      <option value="title_desc" {{ $sort==='title_desc' ? 'selected' : '' }}>Titre Z→A</option>
+      <option value="price_asc"  {{ $sort==='price_asc'  ? 'selected' : '' }}>Prix ↑</option>
+      <option value="price_desc" {{ $sort==='price_desc' ? 'selected' : '' }}>Prix ↓</option>
+      <option value="newest"     {{ $sort==='newest'     ? 'selected' : '' }}>Plus récents</option>
+    </select>
+  </div>
+
+  {{-- Boutons --}}
+  <div class="lg:col-span-12 flex flex-wrap gap-2">
+    <button class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Filtrer</button>
+
+    {{-- Réinitialiser (conserve view & promo si tu veux les garder, sinon simple route('books.index')) --}}
+    @php
+      $resetParams = [];
+      if (request()->has('view'))  $resetParams['view']  = request('view');
+      if (request()->has('promo')) $resetParams['promo'] = request('promo');
+      $resetUrl = $resetParams ? (route('books.index') . '?'. http_build_query($resetParams)) : route('books.index');
+    @endphp
+    <a href="{{ $resetUrl }}" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+      Réinitialiser
+    </a>
+  </div>
+
+  {{-- Conserver l’affichage & le filtre promo --}}
+  <input type="hidden" name="view" value="{{ request('view','cards') }}">
+  @if(request()->boolean('promo'))
+    <input type="hidden" name="promo" value="1">
+  @endif
+</form>
 
   {{-- Résultats --}}
   @if($books->isEmpty())
