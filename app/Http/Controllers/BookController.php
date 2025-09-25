@@ -36,13 +36,13 @@ class BookController extends Controller
 
         // Filtres avancés
         if ($request->filled('author')) {
-            $query->where('author', 'like', '%'.$request->author.'%');
+            $query->where('author', 'like', '%' . $request->author . '%');
         }
         if ($request->filled('year')) {
             $query->where('year', (int) $request->year);
         }
         if ($request->filled('category')) {
-            $query->where('category', 'like', '%'.$request->category.'%');
+            $query->where('category', 'like', '%' . $request->category . '%');
         }
         if ($request->filled('min')) {
             $query->where('price', '>=', (float) $request->min);
@@ -117,6 +117,7 @@ class BookController extends Controller
 
     public function update(Request $request, Book $book): RedirectResponse
     {
+        // ...
         $data = $request->validate([
             'title'    => 'required|string|max:255',
             'author'   => 'required|string|max:255',
@@ -124,7 +125,9 @@ class BookController extends Controller
             'year'     => 'nullable|integer',
             'summary'  => 'nullable|string',
             'price'    => 'required|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0|lte:price', // ← IMPORTANT
         ]);
+        // ...
 
         $book->update($data);
 

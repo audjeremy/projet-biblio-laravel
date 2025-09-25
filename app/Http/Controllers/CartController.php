@@ -23,27 +23,30 @@ class CartController extends Controller
     }
 
     public function add(Request $request, Book $book)
-    {
-        $qty = max(1, (int) $request->input('quantity', 1));
+{
+    $qty = max(1, (int) $request->input('quantity', 1));
 
-        $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-        $item = $cart->items()->where('book_id', $book->id)->first();
+    $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+    $item = $cart->items()->where('book_id', $book->id)->first();
 
-        if ($item) {
-            $item->increment('quantity', $qty);
-        } else {
-            $cart->items()->create([
-                'book_id'  => $book->id,
-                'quantity' => $qty,
-                'price'    => $book->price,
-            ]);
-        }
+    $unitPrice = $book->is_on_sale ? $book->discounted_price : (float) $book->price; // ← ICI
 
-        $cart->load('items');
-        $this->updateTotal($cart);
-
-        return redirect()->route('cart.index')->with('success', 'Livre ajouté au panier.');
+    if ($item) {
+        // On n’écrase pas le prix historique de la ligne; on incrémente la qty.
+        $item->increment('quantity', $qty);
+    } else {
+        $cart->items()->create([
+            'book_id'  => $book->id,
+            'quantity' => $qty,
+            'price'    => $unitPrice, // ← ICI
+        ]);
     }
+
+    $cart->load('items');
+    $this->updateTotal($cart);
+
+    return redirect()->route('cart.index')->with('success', 'Livre ajouté au panier.');
+}
 
     public function remove(CartItem $item)
     {

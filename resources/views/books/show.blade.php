@@ -47,12 +47,31 @@
         </dd>
       </div>
 
-      <div>
-        <dt class="text-sm font-medium text-gray-600">Prix</dt>
-        <dd class="mt-1 text-blue-600 font-semibold">
+     {{-- Prix --}}
+<div>
+  <dt class="text-sm font-medium text-gray-600">Prix</dt>
+  <dd class="mt-1">
+    @if($book->is_on_sale)
+      <div class="flex items-center gap-2">
+        <span class="text-blue-600 font-semibold text-lg">
+          {{ number_format($book->discounted_price, 2, ',', ' ') }} $
+        </span>
+        <span class="line-through text-gray-400">
           {{ number_format($book->price, 2, ',', ' ') }} $
-        </dd>
+        </span>
+        @if($book->save_percent)
+          <span class="inline-block px-2 py-0.5 text-xs rounded bg-rose-100 text-rose-700">
+            -{{ $book->save_percent }}%
+          </span>
+        @endif
       </div>
+    @else
+      <span class="text-blue-600 font-semibold">
+        {{ number_format($book->price, 2, ',', ' ') }} $
+      </span>
+    @endif
+  </dd>
+</div>
     </dl>
 
     {{-- Actions --}}
