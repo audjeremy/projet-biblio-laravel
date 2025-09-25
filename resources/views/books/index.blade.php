@@ -23,7 +23,7 @@
   // fenêtre "Nouveau" en jours (fourni par le contrôleur sinon 10)
   $badgeDays = $badgeDays ?? 10;
 
-  // Helper pour calculer le rabais de manière robuste (fraction 0-1 ou pourcentage 0-100)
+  // Helper pour calculer le rabais (accepte 0–1 ou 0–100)
   $computePrice = function($price, $discountRaw) {
       $raw = (float) ($discountRaw ?? 0);
       $pct = ($raw > 0 && $raw <= 1) ? $raw * 100 : $raw;     // 0.10 => 10%
@@ -49,7 +49,7 @@
     <div class="flex items-center gap-3">
       <h1 class="text-2xl font-semibold">Livres</h1>
 
-      {{-- ✅ Filtres rapides: Toutes / Promotions --}}
+      {{-- Filtres rapides: Toutes / Promotions --}}
       <div class="flex rounded-md overflow-hidden border border-gray-300">
         <a href="{{ $allUrl }}"
            class="px-3 py-1.5 text-sm {{ $isPromo ? 'bg-white text-gray-700 hover:bg-gray-50' : 'bg-blue-600 text-white' }}">
@@ -205,74 +205,76 @@
         </table>
       </div>
     @else
-    {{-- Vue CARTES (élargie : sm:2, lg:3, xl:4) --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-  @foreach($books as $b)
-    @php
-      $priceInfo = $computePrice($b->price, $b->discount ?? 0);
-      $hasDiscount = $priceInfo['has'];
-      $finalPrice  = $priceInfo['final'];
-      $pctDisplay  = $priceInfo['pctDisplay'];
-      $newFlag     = $isNew($b->created_at, $badgeDays);
-    @endphp
-    <div class="bg-white rounded-lg shadow p-4 flex flex-col border min-w-0">
-      
-      {{-- ...dans la boucle @foreach des cartes... --}}
-<div class="bg-white rounded-lg shadow p-4 flex flex-col border min-w-0">
-  {{-- Couverture + badge NOUVEAU (identique à /news) --}}
-  @include('books.partials.cover', ['b' => $b, 'newFlag' => $newFlag])
+      {{-- Vue CARTES (élargie : sm:2, lg:3, xl:4) --}}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @foreach($books as $b)
+          @php
+            $priceInfo = $computePrice($b->price, $b->discount ?? 0);
+            $hasDiscount = $priceInfo['has'];
+            $finalPrice  = $priceInfo['final'];
+            $pctDisplay  = $priceInfo['pctDisplay'];
+            $newFlag     = $isNew($b->created_at, $badgeDays);
+          @endphp
+          <div class="bg-white rounded-lg shadow p-4 flex flex-col border min-w-0">
+            {{-- Couverture + badge NOUVEAU (identique à /news) --}}
+            <div class="relative mb-3">
+              @if($newFlag)
+                <span class="absolute top-2 right-2 z-10 text-[11px] uppercase tracking-wide bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded shadow">
+                  Nouveau
+                </span>
+              @endif
+              <div class="flex items-center justify-center rounded-md border h-40 bg-gradient-to-br from-gray-100 to-gray-200 text-3xl font-bold text-gray-500">
+                {{ \Illuminate\Support\Str::substr($b->title,0,1) }}
+              </div>
+            </div>
 
-  <h5 class="text-lg font-semibold break-words">{{ $b->title }}</h5>
-  <p class="text-sm text-gray-600">{{ $b->author }} @if($b->year) · {{ $b->year }}@endif</p>
+            <h5 class="text-lg font-semibold break-words">{{ $b->title }}</h5>
+            <p class="text-sm text-gray-600">{{ $b->author }} @if($b->year) · {{ $b->year }}@endif</p>
 
-  @if($b->category)
-    <span class="mt-1 inline-block px-2 py-0.5 text-xs rounded bg-orange-100 text-orange-700">
-      {{ $b->category }}
-    </span>
-  @endif
+            @if($b->category)
+              <span class="mt-1 inline-block px-2 py-0.5 text-xs rounded bg-orange-100 text-orange-700">
+                {{ $b->category }}
+              </span>
+            @endif
 
-  <p class="flex-grow mt-2 text-sm text-gray-700">
-    {{ \Illuminate\Support\Str::limit($b->summary, 120, '…') }}
-  </p>
+            <p class="flex-grow mt-2 text-sm text-gray-700">
+              {{ \Illuminate\Support\Str::limit($b->summary, 120, '…') }}
+            </p>
 
-  <div class="mt-3 flex items-center justify-between gap-3">
-    {{-- … prix / actions (inchangé) … --}}
-  </div>
-</div>
+            <div class="mt-3 flex items-center justify-between gap-3">
+              {{-- Prix (avec remise si applicable) --}}
+              @if($hasDiscount)
+                <div class="flex items-center gap-2">
+                  <span class="font-semibold text-blue-600 whitespace-nowrap">{{ number_format($finalPrice, 2, ',', ' ') }} $</span>
+                  <span class="text-xs line-through text-gray-400 whitespace-nowrap">{{ number_format($b->price, 2, ',', ' ') }} $</span>
+                  <span class="text-[11px] bg-rose-600 text-white px-1.5 py-0.5 rounded whitespace-nowrap">-{{ $pctDisplay }}%</span>
+                </div>
+              @else
+                <span class="font-semibold text-blue-600 whitespace-nowrap">
+                  {{ number_format($b->price, 2, ',', ' ') }} $
+                </span>
+              @endif
 
-      <div class="mt-3 flex items-center justify-between gap-3">
-        {{-- Prix (avec remise si applicable) --}}
-        @if($hasDiscount)
-          <div class="flex items-center gap-2">
-            <span class="font-semibold text-blue-600 whitespace-nowrap">{{ number_format($finalPrice, 2, ',', ' ') }} $</span>
-            <span class="text-xs line-through text-gray-400 whitespace-nowrap">{{ number_format($b->price, 2, ',', ' ') }} $</span>
-            <span class="text-[11px] bg-rose-600 text-white px-1.5 py-0.5 rounded whitespace-nowrap">-{{ $pctDisplay }}%</span>
+              <div class="flex flex-wrap gap-2 justify-end">
+                <a href="{{ route('books.show',$b) }}"
+                   class="px-2 py-1 text-xs border border-blue-500 text-blue-600 rounded hover:bg-blue-50">
+                  Voir
+                </a>
+                @auth
+                  <form method="POST" action="{{ route('cart.add',$b) }}">
+                    @csrf
+                    <input type="hidden" name="quantity" value="1">
+                    <button class="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">
+                      + Panier
+                    </button>
+                  </form>
+                @endauth
+                {{-- Pas de Modifier/Supprimer ici --}}
+              </div>
+            </div>
           </div>
-        @else
-          <span class="font-semibold text-blue-600 whitespace-nowrap">
-            {{ number_format($b->price, 2, ',', ' ') }} $
-          </span>
-        @endif
-
-        <div class="flex flex-wrap gap-2 justify-end">
-          <a href="{{ route('books.show',$b) }}"
-             class="px-2 py-1 text-xs border border-blue-500 text-blue-600 rounded hover:bg-blue-50">
-            Voir
-          </a>
-          @auth
-            <form method="POST" action="{{ route('cart.add',$b) }}">
-              @csrf
-              <input type="hidden" name="quantity" value="1">
-              <button class="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">
-                + Panier
-              </button>
-            </form>
-          @endauth
-        </div>
+        @endforeach
       </div>
-    </div>
-  @endforeach
-</div>
     @endif
 
     {{-- Pagination --}}
