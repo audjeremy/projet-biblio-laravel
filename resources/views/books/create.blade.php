@@ -5,7 +5,7 @@
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
   <h1 class="text-2xl font-semibold mb-6">Ajouter un livre</h1>
 
-  {{-- Erreurs de validation --}}
+  {{-- === Affichage des erreurs de validation === --}}
   @if ($errors->any())
     <div class="mb-4 rounded-md border border-rose-200 bg-rose-50 text-rose-700 p-3">
       <ul class="list-disc ms-5">
@@ -16,9 +16,11 @@
     </div>
   @endif
 
+  {{-- === Formulaire d'ajout de livre === --}}
   <form method="POST" action="{{ route('books.store') }}" class="space-y-4">
     @csrf
 
+    {{-- Champ titre du livre --}}
     <div>
       <label class="block text-sm font-medium text-gray-700">Titre <span class="text-rose-600">*</span></label>
       <input name="title" value="{{ old('title') }}" required
@@ -26,11 +28,13 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {{-- Champ auteur --}}
       <div>
         <label class="block text-sm font-medium text-gray-700">Auteur <span class="text-rose-600">*</span></label>
         <input name="author" value="{{ old('author') }}" required
                class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
       </div>
+      {{-- Champ catégorie --}}
       <div>
         <label class="block text-sm font-medium text-gray-700">Catégorie</label>
         <input name="category" value="{{ old('category') }}"
@@ -39,11 +43,13 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {{-- Champ année --}}
       <div>
         <label class="block text-sm font-medium text-gray-700">Année</label>
         <input type="number" name="year" value="{{ old('year') }}"
                class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
       </div>
+      {{-- Champ prix --}}
       <div>
         <label class="block text-sm font-medium text-gray-700">Prix <span class="text-rose-600">*</span></label>
         <input type="number" step="0.01" min="0" name="price" value="{{ old('price') }}" required
@@ -51,6 +57,7 @@
       </div>
     </div>
 
+    {{-- Champ résumé --}}
     <div>
       <label class="block text-sm font-medium text-gray-700">Résumé</label>
       <textarea name="summary" rows="5"

@@ -3,13 +3,13 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto">
-  {{-- Titre --}}
+  {{-- === Titre de la page d'édition === --}}
   <div class="mb-6">
     <h1 class="text-2xl font-semibold">Modifier le livre</h1>
     <p class="text-sm text-gray-500">Met à jour les informations ci-dessous puis enregistre.</p>
   </div>
 
-  {{-- Erreurs globales --}}
+  {{-- === Affichage des erreurs globales === --}}
   @if ($errors->any())
   <div class="mb-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-rose-700">
     <div class="font-semibold mb-1">Veuillez corriger les erreurs suivantes :</div>
@@ -21,11 +21,12 @@
   </div>
   @endif
 
+  {{-- === Formulaire d'édition du livre === --}}
   <form method="POST" action="{{ route('books.update', $book) }}" class="bg-white rounded-lg shadow p-5 space-y-4">
     @csrf
     @method('PUT')
 
-    {{-- Titre --}}
+    {{-- Champ titre --}}
     <div>
       <label for="title" class="block text-sm font-medium text-gray-700">Titre <span class="text-rose-600">*</span></label>
       <input type="text" id="title" name="title" value="{{ old('title',$book->title) }}" required
@@ -34,7 +35,7 @@
       <x-input-error :messages="$errors->get('title')" class="mt-1 text-sm text-rose-600" />
     </div>
 
-    {{-- Auteur + Année --}}
+    {{-- Champs auteur + année --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="sm:col-span-2">
         <label for="author" class="block text-sm font-medium text-gray-700">Auteur <span class="text-rose-600">*</span></label>
@@ -53,7 +54,7 @@
       </div>
     </div>
 
-    {{-- Catégorie + Prix --}}
+    {{-- Champs catégorie + prix --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="sm:col-span-2">
         <label for="category" class="block text-sm font-medium text-gray-700">Catégorie</label>

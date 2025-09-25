@@ -3,12 +3,13 @@
 
 @section('content')
 @php
-  // Helper "est nouveau" (même logique que /news et /books)
+  // === Helpers et calculs pour l'affichage du livre ===
+  // Helper pour savoir si le livre est "nouveau"
   $isNew = function($createdAt, $days = 10) {
     return $createdAt && \Carbon\Carbon::parse($createdAt)->greaterThanOrEqualTo(now()->subDays($days));
   };
 
-  // Calcul remise en pourcentage (accepte 0–1 ou 0–100)
+  // Calcul du rabais éventuel (accepte 0–1 ou 0–100)
   $raw = (float) ($book->discount ?? 0);
   $pct = ($raw > 0 && $raw <= 1) ? $raw * 100 : $raw;
   $pct = max(0, min(100, $pct));
@@ -20,13 +21,13 @@
 @endphp
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-  {{-- Fil d’ariane simple --}}
+  {{-- === Fil d’ariane simple === --}}
   <div class="text-sm mb-4">
     <a class="text-blue-600 hover:underline" href="{{ route('books.index') }}">← Retour à tous les livres</a>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
-    {{-- Couverture + badge "Nouveau" (exactement comme /news) --}}
+    {{-- === Couverture + badge "Nouveau" (identique à /news) === --}}
     <div class="md:col-span-2">
       <div class="relative mb-3">
         @if($newFlag)
@@ -40,7 +41,7 @@
       </div>
     </div>
 
-    {{-- Infos --}}
+    {{-- === Infos principales du livre === --}}
     <div class="md:col-span-3">
       <h1 class="text-2xl font-semibold">{{ $book->title }}</h1>
       <p class="text-gray-700 mt-1">

@@ -3,6 +3,7 @@
 
 @section('content')
 @php
+  // === Variables et helpers principaux ===
   // Vue par défaut = "cards"
   $currentView = request('view', 'cards');
 
@@ -15,12 +16,12 @@
 
   $isPromo = request()->boolean('promo');
 
-  // Helper "est nouveau"
+  // Helper pour savoir si un livre est "nouveau"
   $isNew = function($createdAt, $days) {
     return $createdAt && \Carbon\Carbon::parse($createdAt)->greaterThanOrEqualTo(now()->subDays($days));
   };
 
-  // fenêtre "Nouveau" en jours (fourni par le contrôleur sinon 10)
+  // Nombre de jours pour afficher le badge "Nouveau"
   $badgeDays = $badgeDays ?? 10;
 
   // Helper pour calculer le rabais (accepte 0–1 ou 0–100)
@@ -44,12 +45,12 @@
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  {{-- Header --}}
+  {{-- === En-tête de la page Livres === --}}
   <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
     <div class="flex items-center gap-3">
       <h1 class="text-2xl font-semibold">Livres</h1>
 
-      {{-- Filtres rapides: Toutes / Promotions --}}
+  {{-- Filtres rapides : Toutes / Promotions --}}
       <div class="flex rounded-md overflow-hidden border border-gray-300">
         <a href="{{ $allUrl }}"
            class="px-3 py-1.5 text-sm {{ $isPromo ? 'bg-white text-gray-700 hover:bg-gray-50' : 'bg-blue-600 text-white' }}">
@@ -63,7 +64,7 @@
     </div>
 
     <div class="flex items-center gap-2">
-      {{-- Toggle Liste / Cartes --}}
+      {{-- Boutons pour basculer entre vue Liste et Cartes --}}
       <div class="flex rounded-md shadow-sm" role="group" aria-label="Affichage">
         <a href="{{ request()->fullUrlWithQuery(['view' => 'list']) }}"
            class="px-3 py-1.5 border {{ $currentView === 'list' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }}">
@@ -75,7 +76,7 @@
         </a>
       </div>
 
-      {{-- Bouton ajouter (admin seulement) --}}
+  {{-- Bouton Ajouter (visible seulement pour les admins) --}}
       @can('create', \App\Models\Book::class)
         <a href="{{ route('books.create') }}"
            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
@@ -85,7 +86,7 @@
     </div>
   </div>
 
-  {{-- Flash message --}}
+  {{-- Affichage des messages flash (succès, erreur, etc.) --}}
   @foreach (['success','ok','error'] as $f)
     @if(session($f))
       <div class="mb-4 rounded-md border 
@@ -95,37 +96,37 @@
     @endif
   @endforeach
 
-{{-- Recherche & filtres avancés --}}
+{{-- === Formulaire de recherche & filtres avancés === --}}
 <form method="get" class="grid grid-cols-1 lg:grid-cols-12 gap-2 mb-6" role="search" aria-label="Recherche de livres" id="recherche">
-  {{-- Recherche globale --}}
+  {{-- Recherche globale (titre, auteur, etc.) --}}
   <div class="lg:col-span-4">
     <input type="text" name="q" value="{{ request('q') }}"
            class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
            placeholder="Recherche (titre, auteur, résumé, catégorie, année)">
   </div>
 
-  {{-- Auteur --}}
+  {{-- Filtre par auteur --}}
   <div class="lg:col-span-2">
     <input type="text" name="author" value="{{ request('author') }}"
            class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
            placeholder="Auteur">
   </div>
 
-  {{-- Catégorie --}}
+  {{-- Filtre par catégorie --}}
   <div class="lg:col-span-2">
     <input type="text" name="category" value="{{ request('category') }}"
            class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
            placeholder="Catégorie">
   </div>
 
-  {{-- Année (exacte) --}}
+  {{-- Filtre par année exacte --}}
   <div class="lg:col-span-1">
     <input type="number" name="year" value="{{ request('year') }}"
            class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
            placeholder="Année">
   </div>
 
-  {{-- Prix min / max --}}
+  {{-- Filtres prix min / max --}}
   <div class="lg:col-span-1">
     <input type="number" step="0.01" min="0" name="min" value="{{ request('min') }}"
            class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
@@ -137,7 +138,7 @@
            placeholder="Max $">
   </div>
 
-  {{-- Tri --}}
+  {{-- Tri des résultats --}}
   <div class="lg:col-span-1">
     <select name="sort" class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
       @php $sort = request('sort','title_asc'); @endphp
@@ -149,7 +150,7 @@
     </select>
   </div>
 
-  {{-- Boutons --}}
+  {{-- Boutons Filtrer et Réinitialiser --}}
   <div class="lg:col-span-12 flex flex-wrap gap-2">
     <button class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Filtrer</button>
 
@@ -165,14 +166,14 @@
     </a>
   </div>
 
-  {{-- Conserver l’affichage & le filtre promo --}}
+  {{-- Champs cachés pour conserver l’affichage & le filtre promo --}}
   <input type="hidden" name="view" value="{{ request('view','cards') }}">
   @if(request()->boolean('promo'))
     <input type="hidden" name="promo" value="1">
   @endif
 </form>
 
-  {{-- Résultats --}}
+  {{-- === Affichage des résultats === --}}
   @if($books->isEmpty())
     <div class="p-4 rounded-md border border-blue-200 bg-blue-50 flex items-center justify-between">
       <span>
@@ -186,7 +187,7 @@
       @endcan
     </div>
   @else
-    {{-- Vue LISTE --}}
+  {{-- === Vue LISTE === --}}
     @if($currentView === 'list')
       <div class="overflow-x-auto rounded-lg border border-gray-200">
         <table class="min-w-full text-sm">
@@ -201,7 +202,7 @@
             </tr>
           </thead>
           <tbody class="divide-y">
-            @foreach($books as $b)
+        @foreach($books as $b) {{-- Boucle sur chaque livre --}}
               @php
                 $priceInfo = $computePrice($b->price, $b->discount ?? 0);
                 $hasDiscount = $priceInfo['has'];
@@ -264,9 +265,9 @@
         </table>
       </div>
     @else
-      {{-- Vue CARTES (élargie : sm:2, lg:3, xl:4) --}}
+      {{-- === Vue CARTES (élargie : sm:2, lg:3, xl:4) === --}}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        @foreach($books as $b)
+  @foreach($books as $b) {{-- Boucle sur chaque livre --}}
           @php
             $priceInfo = $computePrice($b->price, $b->discount ?? 0);
             $hasDiscount = $priceInfo['has'];
@@ -336,7 +337,7 @@
       </div>
     @endif
 
-    {{-- Pagination --}}
+  {{-- === Pagination des résultats === --}}
     <div class="mt-6">
       {{ $books->appends(request()->except('page'))->links() }}
     </div>
@@ -346,7 +347,7 @@
 @push('scripts')
 <script>
   (function() {
-    // Si l'URL n'a pas de ?view=..., appliquer le dernier choix mémorisé
+    // Script pour mémoriser le choix d'affichage (liste/cartes) dans le localStorage
     const url = new URL(window.location.href);
     if (!url.searchParams.get('view')) {
       const saved = localStorage.getItem('books_view');
