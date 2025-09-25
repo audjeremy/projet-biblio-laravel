@@ -2,69 +2,59 @@
 @section('title','Contacter nous')
 
 @section('content')
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    {{-- ===================== Formulaire ===================== --}}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold">Contacter nous</h1>
+    <a href="{{ route('books.index') }}" class="text-sm text-blue-600 hover:underline">← Retour aux livres</a>
+  </div>
+
+  {{-- Flash --}}
+  @foreach (['success','error'] as $f)
+    @if(session($f))
+      <div class="mb-4 p-3 rounded-md {{ $f==='error' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' }}">
+        {{ session($f) }}
+      </div>
+    @endif
+  @endforeach
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    {{-- Formulaire --}}
     <div class="lg:col-span-2">
-      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <h1 class="text-2xl font-semibold mb-1">Nous écrire</h1>
-        <p class="text-sm text-gray-500 mb-6">Remplissez le formulaire, nous vous répondrons rapidement.</p>
-
-        {{-- Flash success --}}
-        @if(session('ok'))
-          <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
-            {{ session('ok') }}
-          </div>
-        @endif
-
-        {{-- Erreurs --}}
-        @if ($errors->any())
-          <div class="mb-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-rose-700">
-            <ul class="list-disc list-inside">
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
-        @endif
-
+      <div class="bg-white rounded-lg shadow border p-6">
         <form method="POST" action="{{ route('messages.store') }}" class="space-y-4">
           @csrf
 
           <div>
             <label for="name" class="block text-sm font-medium text-gray-700">Nom</label>
-            <input id="name" name="name" type="text" required maxlength="255"
-                   value="{{ old('name') }}"
-                   class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
+            <input type="text" id="name" name="name" value="{{ old('name') }}"
+                   class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
+            @error('name') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
           </div>
 
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Courriel</label>
-            <input id="email" name="email" type="email" required maxlength="255"
-                   value="{{ old('email') }}"
-                   class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" id="email" name="email" value="{{ old('email') }}"
+                   class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
+            @error('email') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
           </div>
 
           <div>
-            <label for="subject" class="block text-sm font-medium text-gray-700">Sujet (optionnel)</label>
-            <input id="subject" name="subject" type="text" maxlength="255"
-                   value="{{ old('subject') }}"
-                   class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
+            <label for="subject" class="block text-sm font-medium text-gray-700">Sujet</label>
+            <input type="text" id="subject" name="subject" value="{{ old('subject') }}"
+                   class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
+            @error('subject') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
           </div>
 
           <div>
             <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
-            <textarea id="message" name="message" rows="6" required maxlength="5000"
-                      class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">{{ old('message') }}</textarea>
-            <p class="mt-1 text-xs text-gray-500">Max 5000 caractères.</p>
+            <textarea id="message" name="message" rows="6"
+                   class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">{{ old('message') }}</textarea>
+            @error('message') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
           </div>
 
-          {{-- Anti-spam très simple (champ caché, ignoré côté serveur) --}}
-          <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off">
-
           <div class="pt-2">
-            <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
               Envoyer
             </button>
           </div>
@@ -72,55 +62,39 @@
       </div>
     </div>
 
-    {{-- ===================== Coordonnées ===================== --}}
-    <aside class="lg:col-span-1">
-      <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <h2 class="text-lg font-semibold mb-4">Coordonnées</h2>
+    {{-- Infos + Carte --}}
+    <aside class="space-y-6">
+      {{-- Carte Google Maps (Collège Ahuntsic) --}}
+      <div class="bg-white rounded-lg shadow border overflow-hidden">
+        <div class="p-4 border-b">
+          <h2 class="text-lg font-semibold">Où nous trouver</h2>
+          <p class="text-sm text-gray-600">Collège Ahuntsic</p>
+          <p class="text-sm text-gray-600">915 Rue Saint-Hubert, Montréal, QC H2M 1Y8</p>
+        </div>
 
-        <dl class="space-y-3 text-sm">
-          <div>
-            <dt class="font-medium text-gray-700">Bibliothèque</dt>
-            <dd class="text-gray-700">{{ config('app.name') }}</dd>
-          </div>
+        {{-- Iframe responsive avec ratio 16:9 --}}
+        <div class="relative w-full" style="padding-top: 56.25%;">
+          <iframe
+            title="Carte - Collège Ahuntsic"
+            class="absolute inset-0 w-full h-full"
+            style="border:0;"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=Coll%C3%A8ge%20Ahuntsic%2C%20915%20Rue%20Saint-Hubert%2C%20Montr%C3%A9al%2C%20QC%20H2M%201Y8&output=embed">
+          </iframe>
+        </div>
+      </div>
 
-          <div>
-            <dt class="font-medium text-gray-700">Adresse</dt>
-            <dd class="text-gray-700">
-              123 Rue Principale<br>
-              Montréal, QC H1A 2B3
-            </dd>
-          </div>
-
-          <div>
-            <dt class="font-medium text-gray-700">Téléphone</dt>
-            <dd class="text-gray-700">
-              <a href="tel:+15145551234" class="text-blue-600 hover:underline">+1 (514) 555-1234</a>
-            </dd>
-          </div>
-
-          <div>
-            <dt class="font-medium text-gray-700">Courriel</dt>
-            <dd class="text-gray-700">
-              <a href="mailto:contact@exemple.com" class="text-blue-600 hover:underline">contact@exemple.com</a>
-            </dd>
-          </div>
-
-          <div>
-            <dt class="font-medium text-gray-700">Heures d’ouverture</dt>
-            <dd class="text-gray-700">
-              Lun–Ven : 9h–18h<br>
-              Sam : 10h–16h<br>
-              Dim : Fermé
-            </dd>
-          </div>
-        </dl>
-
-        <hr class="my-4">
-
-        <p class="text-xs text-gray-500">
-          Vous pouvez aussi nous joindre via le formulaire. Les messages sont traités
-          en priorité pendant les heures d’ouverture.
-        </p>
+      {{-- Coordonnées (exemple) --}}
+      <div class="bg-white rounded-lg shadow border p-4">
+        <h3 class="text-lg font-semibold mb-2">Coordonnées</h3>
+        <ul class="space-y-1 text-sm text-gray-700">
+          <li><span class="font-medium">Adresse: </span>915 Rue Saint-Hubert, Montréal, QC H2M 1Y8</li>
+          <li><span class="font-medium">Téléphone: </span>(514) 389-5921</li>
+          <li><span class="font-medium">Courriel: </span><a href="mailto:info@librairie-ej.test" class="text-blue-600 hover:underline">info@librairie-ej.test</a></li>
+          <li><span class="font-medium">Heures: </span>Lun–Ven 8h–18h</li>
+          <li><span class="font-medium">Sam-Dim: </span>9h-17h</li>
+        </ul>
       </div>
     </aside>
   </div>
