@@ -6,10 +6,9 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-
-// Stripe SDK
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
 
@@ -28,33 +27,52 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
         }
 
-        Stripe::setApiKey(config('stripe.secret'));
+        $secret = config('services.stripe.secret');
+        $currency = config('services.stripe.currency', 'CAD');
+        if (!$secret) {
+            Log::error('Stripe secret manquant dans config(services.stripe.secret)');
+            return redirect()->route('cart.index')->with('error', 'Configuration Stripe manquante.');
+        }
+        Stripe::setApiKey($secret);
 
-        // Lignes d'articles pour Stripe
+        // Construire les line_items Stripe depuis le panier
         $lineItems = [];
         foreach ($cart->items as $item) {
+            $unit = (float) ($item->price ?? 0);
+            $qty  = (int) $item->quantity;
+            if ($qty < 1 || $unit <= 0) {
+                continue;
+            }
+
             $lineItems[] = [
                 'price_data' => [
-                    'currency'     => config('stripe.currency', 'cad'),
-                    'unit_amount'  => (int) round($item->price * 100), // cents
+                    'currency' => strtolower($currency),
                     'product_data' => [
                         'name' => $item->book->title,
                     ],
+                    'unit_amount' => (int) round($unit * 100), // cents
                 ],
-                'quantity' => $item->quantity,
+                'quantity' => $qty,
             ];
         }
 
-        // Important: inclure {CHECKOUT_SESSION_ID} dans success_url
-        $session = StripeSession::create([
-            'payment_method_types' => ['card'],
-            'line_items'           => $lineItems,
-            'mode'                 => 'payment',
-            'success_url'          => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url'           => route('checkout.cancel'),
-        ]);
+        if (empty($lineItems)) {
+            return redirect()->route('cart.index')->with('error', 'Articles invalides dans le panier.');
+        }
 
-        return redirect()->away($session->url);
+        try {
+            $session = StripeSession::create([
+                'mode' => 'payment',
+                'payment_method_types' => ['card'],
+                'line_items' => $lineItems,
+                'success_url' => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url'  => route('checkout.cancel'),
+            ]);
+            return redirect()->away($session->url);
+        } catch (\Throwable $e) {
+            Log::error('Stripe checkout create failed', ['error' => $e->getMessage()]);
+            return redirect()->route('cart.index')->with('error', 'Erreur lors de la création du paiement Stripe.');
+        }
     }
 
     /**
@@ -67,8 +85,19 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Session de paiement introuvable.');
         }
 
-        Stripe::setApiKey(config('stripe.secret'));
-        $session = StripeSession::retrieve($sessionId);
+        $secret = config('services.stripe.secret');
+        if (!$secret) {
+            Log::error('Stripe secret manquant dans success()');
+            return redirect()->route('cart.index')->with('error', 'Configuration Stripe manquante.');
+        }
+        Stripe::setApiKey($secret);
+
+        try {
+            $session = StripeSession::retrieve($sessionId);
+        } catch (\Throwable $e) {
+            Log::error('Stripe session retrieve failed', ['session_id' => $sessionId, 'error' => $e->getMessage()]);
+            return redirect()->route('cart.index')->with('error', 'Impossible de vérifier le paiement.');
+        }
 
         if (($session->payment_status ?? null) !== 'paid') {
             return redirect()->route('cart.index')->with('error', 'Paiement non confirmé.');
@@ -83,84 +112,76 @@ class CheckoutController extends Controller
             return redirect()->route('books.index')->with('error', 'Panier vide.');
         }
 
-        // Totaux (même logique que /cart)
-        $totals = $this->computeTotalsFromCart($cart);
-
-        // Créer la commande
-        $order = Order::create([
-            'user_id'                 => $userId,
-            'currency'                => strtoupper(config('stripe.currency', 'cad')),
-            'subtotal'                => $totals['subtotal'],
-            'discount'                => $totals['discount'],
-            'gst'                     => $totals['gst'],
-            'qst'                     => $totals['qst'],
-            'shipping'                => $totals['shipping'],
-            'total'                   => $totals['total'],
-            'provider'                => 'stripe',
-            'provider_session_id'     => $sessionId,
-            'provider_payment_intent' => $session->payment_intent ?? null,
-            'status'                  => 'paid',
-            'meta'                    => [
-                'coupon' => session('coupon'),
-            ],
-        ]);
-
+        // Totaux
+        $subtotal = 0.0;
         foreach ($cart->items as $it) {
-            OrderItem::create([
-                'order_id'   => $order->id,
-                'book_id'    => $it->book_id,
-                'title'      => $it->book->title,
-                'author'     => $it->book->author,
-                'quantity'   => $it->quantity,
-                'unit_price' => $it->price,
-                'line_total' => round($it->quantity * $it->price, 2),
+            $price = (float) ($it->price ?? 0);
+            $qty   = (int) $it->quantity;
+            $subtotal += $price * $qty;
+        }
+        $discount = 0.0;
+        $gst = 0.0;
+        $qst = 0.0;
+        $shipping = 0.0;
+        $total = $subtotal - $discount + $gst + $qst + $shipping;
+        $currency = strtoupper(config('services.stripe.currency', 'CAD'));
+
+        try {
+            DB::transaction(function () use ($cart, $userId, $subtotal, $discount, $gst, $qst, $shipping, $total, $currency, $session) {
+                // Créer la commande en respectant les colonnes de ta migration
+                $order = new Order();
+                $order->user_id                 = $userId;
+                $order->currency                = $currency;
+                $order->subtotal                = $subtotal;
+                $order->discount                = $discount;
+                $order->gst                     = $gst;
+                $order->qst                     = $qst;
+                $order->shipping                = $shipping;
+                $order->total                   = $total;
+                $order->provider                = 'stripe';
+                $order->provider_session_id     = $session->id;
+                $order->provider_payment_intent = $session->payment_intent ?? null;
+                $order->status                  = 'paid';
+                $order->meta                    = [
+                    'customer_email' => $session->customer_details->email ?? null,
+                ];
+                $order->save();
+
+                // Créer les lignes de commande (order_items) - migration exige title, author, quantity, unit_price, line_total
+                foreach ($cart->items as $ci) {
+                    $unit = (float) ($ci->price ?? 0);
+                    $qty  = (int) $ci->quantity;
+                    $line = $unit * $qty;
+
+                    $oi = new OrderItem();
+                    $oi->order_id   = $order->id;
+                    $oi->book_id    = $ci->book_id;
+                    $oi->title      = $ci->book->title ?? 'Livre';
+                    $oi->author     = $ci->book->author ?? null;
+                    $oi->quantity   = $qty;
+                    $oi->unit_price = $unit;
+                    $oi->line_total = $line;
+                    $oi->save();
+                }
+
+                // Vider le panier
+                $cart->items()->delete();
+            });
+        } catch (\Throwable $e) {
+            Log::error('Order creation failed after Stripe payment', [
+                'user_id'    => $userId,
+                'session_id' => $sessionId,
+                'error'      => $e->getMessage(),
             ]);
+            return redirect()->route('cart.index')->with('error', 'Paiement confirmé, mais la création de la commande a échoué.');
         }
 
-        // Vider le panier et nettoyer la session
-        $cart->items()->delete();
-        $cart->update(['total' => 0]);
-        session()->forget('coupon');
-
-        return view('checkout.success', ['order' => $order]);
+        return redirect()->route('books.index')
+            ->with('success', 'Merci! Paiement confirmé et commande créée.');
     }
 
-    /**
-     * Retour annulation.
-     */
     public function cancel()
     {
-        return view('checkout.cancel');
-    }
-
-    /**
-     * Recalcule les totaux à partir du panier (TPS/TVQ & remise).
-     */
-    private function computeTotalsFromCart(Cart $cart): array
-    {
-        $currency = config('cart.currency', '$');
-        $taxes    = config('cart.taxes', ['gst' => 0, 'qst' => 0]);
-        $gstRate  = Arr::get($taxes, 'gst', 0);
-        $qstRate  = Arr::get($taxes, 'qst', 0);
-
-        $subtotal = (float) $cart->items->sum(fn($i) => $i->quantity * $i->price);
-        $coupon   = session('coupon'); // ['code','type','value','label']
-        $discount = 0.0;
-
-        if ($coupon && $subtotal > 0) {
-            if (($coupon['type'] ?? null) === 'percent') {
-                $discount = round($subtotal * (float)$coupon['value'], 2);
-            } elseif (($coupon['type'] ?? null) === 'fixed') {
-                $discount = min(round((float)$coupon['value'], 2), $subtotal);
-            }
-        }
-
-        $base     = max(0, $subtotal - $discount);
-        $gst      = round($base * $gstRate, 2);
-        $qst      = round($base * $qstRate, 2);
-        $shipping = (float) config('cart.shipping_flat', 0);
-        $total    = round($base + $gst + $qst + $shipping, 2);
-
-        return compact('currency','subtotal','discount','gst','qst','shipping','total','coupon');
+        return redirect()->route('cart.index')->with('error', 'Paiement annulé.');
     }
 }
