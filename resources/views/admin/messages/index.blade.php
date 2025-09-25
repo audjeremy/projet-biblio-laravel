@@ -55,36 +55,43 @@
                 <span class="px-2 py-0.5 text-xs rounded bg-orange-200 text-orange-800">Non lu</span>
               @endif
             </td>
-            <td class="px-4 py-2">
-              <div class="flex justify-end gap-2 items-center">
-                {{-- Voir contenu (details/summary natif) --}}
-                <details class="group">
-                  <summary class="px-2 py-1 text-xs border border-blue-500 text-blue-600 rounded hover:bg-blue-50 cursor-pointer">
-                    Voir
-                  </summary>
-                  <div class="mt-2 p-3 bg-white border rounded shadow-sm w-[36rem] max-w-[90vw]">
-                    <div class="text-sm text-gray-500 mb-1">Message :</div>
-                    <div class="whitespace-pre-line">{{ $m->message }}</div>
-                  </div>
-                </details>
+            <td class="px-4 py-2 text-right space-x-2">
+              {{-- Voir contenu (details/summary natif) --}}
+              <details class="group inline-block">
+                <summary class="px-2 py-1 text-xs border border-blue-500 text-blue-600 rounded hover:bg-blue-50 cursor-pointer">
+                  Voir
+                </summary>
+                <div class="mt-2 p-3 bg-white border rounded shadow-sm w-[36rem] max-w-[90vw]">
+                  <div class="text-sm text-gray-500 mb-1">Message :</div>
+                  <div class="whitespace-pre-line">{{ $m->message }}</div>
+                </div>
+              </details>
 
-                @if(!$m->is_read)
-                <form method="POST" action="{{ route('admin.messages.read', $m) }}">
+              {{-- Marquer comme lu / non lu --}}
+              @if(!$m->is_read)
+                <form action="{{ route('admin.messages.read',$m) }}" method="POST" class="inline">
                   @csrf @method('PATCH')
                   <button class="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">
-                    Marquer lu
+                    Marquer comme lu
                   </button>
                 </form>
-                @endif
+              @else
+                <form action="{{ route('admin.messages.unread',$m) }}" method="POST" class="inline">
+                  @csrf @method('PATCH')
+                  <button class="px-2 py-1 text-xs bg-amber-500 text-white rounded hover:bg-amber-600">
+                    Marquer comme non lu
+                  </button>
+                </form>
+              @endif
 
-                <form method="POST" action="{{ route('admin.messages.destroy', $m) }}"
-                      onsubmit="return confirm('Supprimer ce message ?')">
-                  @csrf @method('DELETE')
-                  <button class="px-2 py-1 text-xs bg-rose-600 text-white rounded hover:bg-rose-700">
-                    Supprimer
-                  </button>
-                </form>
-              </div>
+              {{-- Supprimer --}}
+              <form action="{{ route('admin.messages.destroy',$m) }}" method="POST" class="inline"
+                    onsubmit="return confirm('Supprimer ce message ?')">
+                @csrf @method('DELETE')
+                <button class="px-2 py-1 text-xs bg-rose-600 text-white rounded hover:bg-rose-700">
+                  Supprimer
+                </button>
+              </form>
             </td>
           </tr>
           @endforeach

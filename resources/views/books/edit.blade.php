@@ -83,11 +83,11 @@
       <x-input-error :messages="$errors->get('summary')" class="mt-1 text-sm text-rose-600" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700">Remise (montant)</label>
-      <input type="number" step="0.01" name="discount" value="{{ old('discount', $book->discount) }}"
-        class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
-      @error('discount')<p class="text-sm text-rose-600 mt-1">{{ $message }}</p>@enderror
-    </div>
+    <label for="discount" class="block text-sm font-medium text-gray-700">Remise (%)</label>
+    <input type="number" step="0.01" min="0" max="100" name="discount" id="discount"
+           value="{{ old('discount', $book->discount ?? 0) }}"
+           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+</div>
     {{-- Actions --}}
     <div class="pt-2 flex items-center justify-end gap-2">
       <a href="{{ route('books.index') }}"

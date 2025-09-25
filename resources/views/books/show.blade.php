@@ -14,6 +14,14 @@
     </p>
   </div>
 
+  @php
+    $hasDiscount = isset($book->discount) && (float)$book->discount > 0;
+    $pctDisplay  = (int) round(max(0, min(100, (float) $book->discount)));
+    $finalPrice  = $hasDiscount
+        ? round((float)$book->price * (1 - ($pctDisplay / 100)), 2)
+        : (float)$book->price;
+  @endphp
+
   {{-- Carte d’info --}}
   <div class="bg-white rounded-lg shadow border border-gray-200 p-5">
     <dl class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3">
@@ -47,36 +55,25 @@
         </dd>
       </div>
 
-     {{-- Prix --}}
-<div>
-  <dt class="text-sm font-medium text-gray-600">Prix</dt>
-  <dd class="mt-1">
-    @if($book->is_on_sale)
-      <div class="flex items-center gap-2">
-        <span class="text-blue-600 font-semibold text-lg">
-          {{ number_format($book->discounted_price, 2, ',', ' ') }} $
-        </span>
-        <span class="line-through text-gray-400">
-          {{ number_format($book->price, 2, ',', ' ') }} $
-        </span>
-        @if($book->save_percent)
-          <span class="inline-block px-2 py-0.5 text-xs rounded bg-rose-100 text-rose-700">
-            -{{ $book->save_percent }}%
-          </span>
-        @endif
+      <div>
+        <dt class="text-sm font-medium text-gray-600">Prix</dt>
+        <dd class="mt-1">
+          @if($hasDiscount)
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-blue-600">{{ number_format($finalPrice, 2, ',', ' ') }} $</span>
+              <span class="text-sm line-through text-gray-400">{{ number_format($book->price, 2, ',', ' ') }} $</span>
+              <span class="text-[11px] bg-rose-600 text-white px-1.5 py-0.5 rounded">-{{ $pctDisplay }}%</span>
+            </div>
+          @else
+            <span class="font-semibold text-blue-600">{{ number_format($book->price, 2, ',', ' ') }} $</span>
+          @endif
+        </dd>
       </div>
-    @else
-      <span class="text-blue-600 font-semibold">
-        {{ number_format($book->price, 2, ',', ' ') }} $
-      </span>
-    @endif
-  </dd>
-</div>
     </dl>
 
     {{-- Actions --}}
     <div class="mt-6 flex flex-wrap items-center gap-2">
-      {{-- Retour (prend en compte si back=la même page) --}}
+      {{-- Retour --}}
       <a href="{{ url()->previous() === url()->current() ? route('books.index') : url()->previous() }}"
          class="px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50">
         ← Retour

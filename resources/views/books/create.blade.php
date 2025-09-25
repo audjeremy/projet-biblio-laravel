@@ -2,104 +2,75 @@
 @section('title','Ajouter un livre')
 
 @section('content')
-<div class="max-w-3xl mx-auto">
-  {{-- Titre --}}
-  <div class="mb-6">
-    <h1 class="text-2xl font-semibold">Ajouter un livre</h1>
-    <p class="text-sm text-gray-500">Renseigne les champs ci-dessous puis enregistre.</p>
-  </div>
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+  <h1 class="text-2xl font-semibold mb-6">Ajouter un livre</h1>
 
-  {{-- Erreurs globales --}}
+  {{-- Erreurs de validation --}}
   @if ($errors->any())
-  <div class="mb-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-rose-700">
-    <div class="font-semibold mb-1">Veuillez corriger les erreurs suivantes :</div>
-    <ul class="list-disc ms-5 text-sm">
-      @foreach ($errors->all() as $error)
-      <li>{{ $error }}</li>
-      @endforeach
-    </ul>
-  </div>
+    <div class="mb-4 rounded-md border border-rose-200 bg-rose-50 text-rose-700 p-3">
+      <ul class="list-disc ms-5">
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
   @endif
 
-  <form method="POST" action="{{ route('books.store') }}" class="bg-white rounded-lg shadow p-5 space-y-4">
+  <form method="POST" action="{{ route('books.store') }}" class="space-y-4">
     @csrf
 
-    {{-- Titre --}}
     <div>
-      <label for="title" class="block text-sm font-medium text-gray-700">Titre <span class="text-rose-600">*</span></label>
-      <input type="text" id="title" name="title" value="{{ old('title') }}" required
-        class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-        placeholder="Ex: L’Étranger">
-      <x-input-error :messages="$errors->get('title')" class="mt-1 text-sm text-rose-600" />
+      <label class="block text-sm font-medium text-gray-700">Titre <span class="text-rose-600">*</span></label>
+      <input name="title" value="{{ old('title') }}" required
+             class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
     </div>
 
-    {{-- Auteur + Année --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="sm:col-span-2">
-        <label for="author" class="block text-sm font-medium text-gray-700">Auteur <span class="text-rose-600">*</span></label>
-        <input type="text" id="author" name="author" value="{{ old('author') }}" required
-          class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-          placeholder="Ex: Albert Camus">
-        <x-input-error :messages="$errors->get('author')" class="mt-1 text-sm text-rose-600" />
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Auteur <span class="text-rose-600">*</span></label>
+        <input name="author" value="{{ old('author') }}" required
+               class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
       </div>
       <div>
-        <label for="year" class="block text-sm font-medium text-gray-700">Année</label>
-        <input type="number" id="year" name="year" value="{{ old('year') }}"
-          min="0" max="{{ date('Y') + 1 }}"
-          class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-          placeholder="{{ date('Y') }}">
-        <x-input-error :messages="$errors->get('year')" class="mt-1 text-sm text-rose-600" />
+        <label class="block text-sm font-medium text-gray-700">Catégorie</label>
+        <input name="category" value="{{ old('category') }}"
+               class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
       </div>
     </div>
 
-    {{-- Catégorie + Prix --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="sm:col-span-2">
-        <label for="category" class="block text-sm font-medium text-gray-700">Catégorie</label>
-        <input type="text" id="category" name="category" value="{{ old('category') }}"
-          class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-          placeholder="Ex: Roman">
-        <x-input-error :messages="$errors->get('category')" class="mt-1 text-sm text-rose-600" />
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Année</label>
+        <input type="number" name="year" value="{{ old('year') }}"
+               class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
       </div>
       <div>
-        <label for="price" class="block text-sm font-medium text-gray-700">Prix <span class="text-rose-600">*</span></label>
-        <div class="mt-1 relative">
-          <input type="number" step="0.01" min="0" id="price" name="price" value="{{ old('price') }}" required
-            class="block w-full rounded-md border-gray-300 pe-10 focus:border-blue-500 focus:ring-blue-200"
-            placeholder="0.00">
-          <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">$</span>
-        </div>
-        <x-input-error :messages="$errors->get('price')" class="mt-1 text-sm text-rose-600" />
+        <label class="block text-sm font-medium text-gray-700">Prix <span class="text-rose-600">*</span></label>
+        <input type="number" step="0.01" min="0" name="price" value="{{ old('price') }}" required
+               class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">
       </div>
     </div>
 
-    {{-- Résumé --}}
     <div>
-      <label for="summary" class="block text-sm font-medium text-gray-700">Résumé</label>
-      <textarea id="summary" name="summary" rows="5"
-        class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-        placeholder="Brève description du livre…">{{ old('summary') }}</textarea>
-      <x-input-error :messages="$errors->get('summary')" class="mt-1 text-sm text-rose-600" />
+      <label class="block text-sm font-medium text-gray-700">Résumé</label>
+      <textarea name="summary" rows="5"
+                class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200">{{ old('summary') }}</textarea>
     </div>
 
-    {{-- Actions --}}
-    <div class="pt-2 flex items-center justify-end gap-2">
+    {{-- Optionnel : pour tester les promos rapidement si la colonne discount existe --}}
+    @if(Schema::hasColumn('books', 'discount'))
+      <div>
+    <label for="discount" class="block text-sm font-medium text-gray-700">Remise (%)</label>
+    <input type="number" step="0.01" min="0" max="100" name="discount" id="discount"
+           value="{{ old('discount', $book->discount ?? 0) }}"
+           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+</div>
+    @endif
+
+    <div class="flex items-center gap-2 pt-2">
       <a href="{{ route('books.index') }}"
-        class="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50">
-        Annuler
-      </a>
-      <button type="submit"
-        class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">
-        Enregistrer
-      </button>
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Remise (montant)</label>
-      <input type="number" step="0.01" name="discount" value="{{ old('discount') }}"
-        class="mt-1 w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-200"
-        placeholder="Ex: 3.50">
-      @error('discount')<p class="text-sm text-rose-600 mt-1">{{ $message }}</p>@enderror
+         class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Annuler</a>
+      <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Enregistrer</button>
     </div>
   </form>
 </div>

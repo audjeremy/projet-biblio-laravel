@@ -12,7 +12,7 @@ class MessageController extends Controller
     public function __construct()
     {
         // réservé admin
-        $this->middleware(['auth','verified','role:admin']);
+        $this->middleware(['auth', 'verified', 'role:admin']);
     }
 
     public function index(): View
@@ -29,6 +29,16 @@ class MessageController extends Controller
             $message->save();
         }
         return back()->with('success', 'Message marqué comme lu.');
+    }
+
+
+    public function markAsUnread(Message $message)
+    {
+        $message->update(['is_read' => false]);
+
+        return redirect()
+            ->route('admin.messages.index')
+            ->with('success', 'Message marqué comme non lu.');
     }
 
     public function destroy(Message $message): RedirectResponse

@@ -98,6 +98,7 @@ class BookController extends Controller
             'year'     => 'nullable|integer',
             'summary'  => 'nullable|string',
             'price'    => 'required|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0|max:100',
         ]);
 
         Book::create($data);
@@ -125,7 +126,7 @@ class BookController extends Controller
             'year'     => 'nullable|integer',
             'summary'  => 'nullable|string',
             'price'    => 'required|numeric|min:0',
-            'discount' => 'nullable|numeric|min:0|lte:price', // ← IMPORTANT
+            'discount' => 'nullable|numeric|min:0|max:100',
         ]);
         // ...
 

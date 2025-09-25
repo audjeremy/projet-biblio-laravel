@@ -6,19 +6,23 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaypalController;
 use App\Http\Controllers\OrderController as UserOrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
-use App\Http\Controllers\MessageController; // Formulaire Contact (public)
+use App\Http\Controllers\MessageController;
 
 // Accueil = /books
 Route::redirect('/', '/books')->name('home');
 
-
-// Dashboard (protégé)
-Route::get('/dashboard', fn () => view('dashboard'))
-    ->middleware(['auth', 'verified'])
+/*
+|--------------------------------------------------------------------------
+| Dashboard (ADMIN seulement) : liste toutes les commandes
+|--------------------------------------------------------------------------
+*/
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth','verified'])
     ->name('dashboard');
 
 /*
@@ -29,7 +33,7 @@ Route::get('/dashboard', fn () => view('dashboard'))
 Route::middleware('auth')->group(function () {
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile',[ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 /*
@@ -56,18 +60,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/cart/coupon',             [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
     Route::delete('/cart/coupon',           [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 
-    // Checkout Stripe
+    // Stripe
     Route::get('/checkout/stripe',  [CheckoutController::class, 'create'])->name('checkout.stripe');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/cancel',  [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 
-    // Checkout PayPal
+    // PayPal
     Route::get('/checkout/paypal',         [PaypalController::class, 'create'])->name('paypal.create');
     Route::get('/checkout/paypal/return',  [PaypalController::class, 'approveReturn'])->name('paypal.return');
     Route::get('/checkout/paypal/cancel',  [PaypalController::class, 'cancel'])->name('paypal.cancel');
 
     // Historique (user)
-    Route::get('/orders', [UserOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders',         [UserOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [UserOrderController::class, 'show'])->name('orders.show');
 });
 
@@ -75,31 +79,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 | Livres
 |--------------------------------------------------------------------------
-| Public : index+show
-| Admin  : create/store/edit/update/destroy
+| IMPORTANT : déclarer 'create/edit' AVANT 'show' pour éviter le 404.
 */
-Route::resource('books', BookController::class)->only(['index','show']);
-Route::middleware(['auth','verified','role:admin'])->group(function () {
-    Route::resource('books', BookController::class)->except(['index','show']);
+
+// Index (public)
+Route::get('books', [BookController::class, 'index'])->name('books.index');
+
+// CRUD admin (create/store/edit/update/destroy)
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+    Route::get('books/create',        [BookController::class, 'create'])->name('books.create');
+    Route::post('books',              [BookController::class, 'store'])->name('books.store');
+    Route::get('books/{book}/edit',   [BookController::class, 'edit'])->name('books.edit');
+    Route::put('books/{book}',        [BookController::class, 'update'])->name('books.update');
+    Route::delete('books/{book}',     [BookController::class, 'destroy'])->name('books.destroy');
 });
 
-// Route supplémentaire : Nouveautés
+// Show (public) — placé APRÈS create/edit
+Route::get('books/{book}', [BookController::class, 'show'])->name('books.show');
+
+// Nouveautés
 Route::get('/news', [BookController::class, 'news'])->name('books.news');
 
 /*
 |--------------------------------------------------------------------------
-| Admin
+| Admin (messages + commandes)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth','verified','role:admin'])->group(function () {
-    // Messages
-    Route::get('/admin/messages',                 [AdminMessageController::class,'index'])->name('admin.messages.index');
-    Route::patch('/admin/messages/{message}/read',[AdminMessageController::class,'markAsRead'])->name('admin.messages.read');
-    Route::delete('/admin/messages/{message}',    [AdminMessageController::class,'destroy'])->name('admin.messages.destroy');
+// routes/web.php
 
-    // Commandes
-    Route::get('/admin/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
-    Route::get('/admin/orders/{order}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
+Route::middleware(['auth','verified','role:admin'])->group(function () {
+    Route::get('/admin/messages', [AdminMessageController::class,'index'])->name('admin.messages.index');
+    Route::patch('/admin/messages/{message}/read', [AdminMessageController::class,'markAsRead'])->name('admin.messages.read');
+    Route::patch('/admin/messages/{message}/unread', [AdminMessageController::class,'markAsUnread'])->name('admin.messages.unread'); // ✅
+    Route::delete('/admin/messages/{message}', [AdminMessageController::class,'destroy'])->name('admin.messages.destroy');
 });
 
-require __DIR__.'/auth.php';
+// Commandes (si tu veux garder les vues détaillées admin)
+Route::get('/admin/orders',         [AdminOrderController::class, 'index'])->name('admin.orders.index');
+Route::get('/admin/orders/{order}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
+
+require __DIR__ . '/auth.php';
